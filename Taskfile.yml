@@ -1,0 +1,24 @@
+version: "3"
+
+vars:
+  IMAGE: '{{default "localhost/fedora-atomic" .IMAGE}}'
+  TAG: '{{default "testing" .TAG}}'
+  BASE_IMAGE: '{{default "ghcr.io/ublue-os/kinoite-main:latest" .BASE_IMAGE}}'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - '{{.TASK_EXE}} --list'
+
+  build:
+    desc: Build the local bootc image
+    preconditions:
+      - sh: command -v podman >/dev/null 2>&1
+        msg: Podman is required to build the image.
+    env:
+      IMAGE: "{{.IMAGE}}"
+      TAG: "{{.TAG}}"
+      BASE_IMAGE: "{{.BASE_IMAGE}}"
+    cmds:
+      - ./scripts/build-image.sh
