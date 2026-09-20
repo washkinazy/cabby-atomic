@@ -1,0 +1,61 @@
+{
+  "default": [
+    {
+      "type": "reject"
+    }
+  ],
+  "transports": {
+    "docker": {
+      "": [
+        {
+          "type": "insecureAcceptAnything"
+        }
+      ],
+      "ghcr.io/washkinazy/cabby-atomic": [
+        {
+          "type": "sigstoreSigned",
+          "keyPath": "/etc/pki/containers/cabby-atomic.pub",
+          "signedIdentity": {
+            "type": "exactRepository",
+            "dockerRepository": "ghcr.io/washkinazy/cabby-atomic"
+          }
+        }
+      ]
+    },
+    "containers-storage": {
+      "": [
+        {
+          "type": "insecureAcceptAnything"
+        }
+      ]
+    },
+    "dir": {
+      "": [
+        {
+          "type": "insecureAcceptAnything"
+        }
+      ]
+    },
+    "docker-archive": {
+      "": [
+        {
+          "type": "insecureAcceptAnything"
+        }
+      ]
+    },
+    "oci": {
+      "": [
+        {
+          "type": "insecureAcceptAnything"
+        }
+      ]
+    },
+    "oci-archive": {
+      "": [
+        {
+          "type": "insecureAcceptAnything"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,25 @@
+# Cabby Atomic's system-level Wayland session. User configuration belongs in
+# the separate dotfiles repository.
+
+# Compositors and their portal/session integration
+niri
+xwayland-satellite
+xdg-desktop-portal-gnome
+hyprland
+hyprland-uwsm
+xdg-desktop-portal-hyprland
+uwsm
+
+# Noctalia shell and hardware/service backends
+noctalia
+brightnessctl
+ddcutil
+playerctl
+upower
+
+# Authentication, secrets, and application theming
+kf6-kwallet
+pam-kwallet
+polkit-kde
+qt5ct
+qt6ct

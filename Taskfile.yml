@@ -28,6 +28,19 @@ tasks:
     cmds:
       - ./scripts/build-image.sh
 
+  validate:
+    desc: Run Cabby Atomic smoke tests against a built image
+    preconditions:
+      - sh: command -v podman >/dev/null 2>&1
+        msg: Podman is required to validate the image.
+      - sh: podman image exists "{{.IMAGE}}:{{.TAG}}"
+        msg: Build the image with `task build` before validating it.
+    env:
+      IMAGE: "{{.IMAGE}}"
+      TAG: "{{.TAG}}"
+    cmds:
+      - ./scripts/validate-image.sh
+
   publish:
     desc: Push the built image to its remote channel
     preconditions:
@@ -53,3 +66,16 @@ tasks:
       REMOTE_IMAGE: "{{.REMOTE_IMAGE}}"
     cmds:
       - ./scripts/sign-image.sh
+
+  verify-policy:
+    desc: Verify a published image through the installed signature policy
+    preconditions:
+      - sh: command -v skopeo >/dev/null 2>&1
+        msg: Skopeo is required to verify the containers policy.
+      - sh: command -v podman >/dev/null 2>&1
+        msg: Podman is required to clean up the verification image.
+    env:
+      REMOTE_IMAGE: "{{.REMOTE_IMAGE}}"
+      DIGEST: "{{.DIGEST}}"
+    cmds:
+      - ./scripts/verify-policy.sh

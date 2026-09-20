@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+failures=0
+
+pass() {
+  printf 'ok: %s\n' "$1"
+}
+
+fail() {
+  printf 'FAIL: %s\n' "$1" >&2
+  failures=$((failures + 1))
+}
+
+require_command() {
+  if command -v "$1" >/dev/null 2>&1; then
+    pass "command $1"
+  else
+    fail "missing command $1"
+  fi
+}
+
+require_file() {
+  if [[ -s "$1" ]]; then
+    pass "file $1"
+  else
+    fail "missing or empty file $1"
+  fi
+}
+
+# shellcheck disable=SC1091
+source /usr/lib/os-release
+if [[ "${NAME:-}" == "Cabby Atomic" ]]; then
+  pass "OS name"
+else
+  fail "OS name"
+fi
+if [[ "${IMAGE_ID:-}" == "cabby-atomic" ]]; then
+  pass "image ID"
+else
+  fail "image ID"
+fi
+if [[ "${PRETTY_NAME:-}" == "Cabby Atomic: ${VERSION_ID:-}" ]]; then
+  pass "boot-menu name"
+else
+  fail "boot-menu name"
+fi
+
+for command in niri Hyprland noctalia uwsm brightnessctl playerctl; do
+  require_command "${command}"
+done
+
+require_file /usr/share/wayland-sessions/niri.desktop
+require_file /usr/share/wayland-sessions/hyprland.desktop
+require_file /usr/share/plymouth/themes/spinner/watermark.png
+require_file /etc/pki/containers/cabby-atomic.pub
+require_file /etc/containers/policy.json
+require_file /etc/containers/registries.d/cabby-atomic.yaml
+
+if python3 -m json.tool /etc/containers/policy.json >/dev/null; then
+  pass "signature policy JSON"
+else
+  fail "invalid signature policy JSON"
+fi
+
+if grep -Fq '"type": "sigstoreSigned"' /etc/containers/policy.json; then
+  pass "signature requirement"
+else
+  fail "missing signature requirement"
+fi
+if grep -A2 '"default"' /etc/containers/policy.json \
+  | grep -Fq '"type": "reject"'; then
+  pass "locked-down default signature policy"
+else
+  fail "default signature policy is not locked down"
+fi
+if grep -Fq 'use-sigstore-attachments: true' \
+  /etc/containers/registries.d/cabby-atomic.yaml; then
+  pass "Sigstore attachment discovery"
+else
+  fail "missing Sigstore attachment discovery"
+fi
+
+if ((failures > 0)); then
+  printf '%d image validation check(s) failed\n' "${failures}" >&2
+  exit 1
+fi
+
+printf 'Cabby Atomic image validation passed\n'

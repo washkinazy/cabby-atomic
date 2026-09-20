@@ -24,6 +24,12 @@ else
 fi
 
 cp -a /ctx/system_files/. /
+chmod 0755 /usr/libexec/cabby-atomic/validate-image
+
+if ! cmp -s /ctx/cosign.pub /etc/pki/containers/cabby-atomic.pub; then
+  printf 'Embedded signing key does not match cosign.pub\n' >&2
+  exit 1
+fi
 
 # Plymouth assets are embedded in the bootable initramfs, so changing only the
 # root filesystem copy would leave the old Fedora watermark visible at boot.

@@ -66,6 +66,9 @@ jobs:
       - name: Build image
         run: task build IMAGE="${LOCAL_IMAGE}" TAG="${CHANNEL}"
 
+      - name: Validate image
+        run: task validate IMAGE="${LOCAL_IMAGE}" TAG="${CHANNEL}"
+
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'
         # yamllint disable-line rule:line-length
@@ -101,6 +104,14 @@ jobs:
           export DIGEST
           DIGEST="$(<"${DIGEST_FILE}")"
           task sign REMOTE_IMAGE="${REMOTE_IMAGE}"
+
+      - name: Verify installed signature policy
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          export DIGEST
+          DIGEST="$(<"${DIGEST_FILE}")"
+          task verify-policy REMOTE_IMAGE="${REMOTE_IMAGE}"
 
       - name: Publish channel
         if: github.event_name != 'pull_request'
