@@ -2,6 +2,7 @@
 version: "3"
 
 vars:
+  # Local builds default to the same channel used by the development laptop.
   IMAGE: '{{default "localhost/fedora-atomic" .IMAGE}}'
   TAG: '{{default "testing" .TAG}}'
   BASE_IMAGE: '{{default "ghcr.io/ublue-os/kinoite-main:latest" .BASE_IMAGE}}'
