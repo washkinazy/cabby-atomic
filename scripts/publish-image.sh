@@ -2,11 +2,11 @@
 
 set -euo pipefail
 
-image="${IMAGE:-localhost/fedora-atomic}"
+image="${IMAGE:-localhost/cabby-atomic}"
 tag="${TAG:?TAG is required}"
 remote_image="${REMOTE_IMAGE:?REMOTE_IMAGE is required}"
 remote_tag="${REMOTE_TAG:-${tag}}"
-digest_file="${DIGEST_FILE:-/tmp/fedora-atomic-digest}"
+digest_file="${DIGEST_FILE:-/tmp/cabby-atomic-digest}"
 
 podman push \
   --digestfile="${digest_file}" \

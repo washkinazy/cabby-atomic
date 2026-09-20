@@ -3,12 +3,12 @@ version: "3"
 
 vars:
   # Local builds default to the same channel used by the development laptop.
-  IMAGE: '{{default "localhost/fedora-atomic" .IMAGE}}'
+  IMAGE: '{{default "localhost/cabby-atomic" .IMAGE}}'
   TAG: '{{default "testing" .TAG}}'
   BASE_IMAGE: '{{default "ghcr.io/ublue-os/kinoite-main:latest" .BASE_IMAGE}}'
-  REMOTE_IMAGE: '{{default "ghcr.io/washkinazy/fedora-atomic" .REMOTE_IMAGE}}'
+  REMOTE_IMAGE: '{{default "ghcr.io/washkinazy/cabby-atomic" .REMOTE_IMAGE}}'
   REMOTE_TAG: '{{default .TAG .REMOTE_TAG}}'
-  DIGEST_FILE: '{{default "/tmp/fedora-atomic-digest" .DIGEST_FILE}}'
+  DIGEST_FILE: '{{default "/tmp/cabby-atomic-digest" .DIGEST_FILE}}'
 
 tasks:
   default:

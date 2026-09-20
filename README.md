@@ -1,8 +1,8 @@
-# Fedora Atomic
+# Cabby Atomic
 
-Personal Fedora Atomic desktop images built with bootc. The initial image is
-based on Universal Blue Kinoite so Plasma remains available as a fallback while
-the Niri, Hyprland, and Noctalia desktop stack is developed.
+A window-manager-focused Fedora Atomic desktop built with bootc. The initial
+image is based on Universal Blue Kinoite so Plasma remains available as a
+fallback while the Niri, Hyprland, and Noctalia desktop stack is developed.
 
 ## Local build
 
@@ -17,12 +17,15 @@ Build the default local image:
 task build
 ```
 
-The result is tagged `localhost/fedora-atomic:testing`.
+The result is tagged `localhost/cabby-atomic:testing`.
+
+The image identifies itself as `Cabby Atomic: <Fedora version>` in the boot menu
+and uses a cabby-hat watermark on the Plymouth boot splash.
 
 Build arguments can be overridden without editing the Taskfile:
 
 ```bash
-task build IMAGE=localhost/fedora-atomic TAG=dev \
+task build IMAGE=localhost/cabby-atomic TAG=dev \
   BASE_IMAGE=ghcr.io/ublue-os/kinoite-main:latest
 ```
 
@@ -35,8 +38,8 @@ GitHub Actions builds pull requests without publishing them. Merges to the
 `testing` and `main` branches publish the corresponding image tag:
 
 ```text
-ghcr.io/washkinazy/fedora-atomic:testing
-ghcr.io/washkinazy/fedora-atomic:main
+ghcr.io/washkinazy/cabby-atomic:testing
+ghcr.io/washkinazy/cabby-atomic:main
 ```
 
 The `main` channel is also rebuilt every Sunday to incorporate upstream image

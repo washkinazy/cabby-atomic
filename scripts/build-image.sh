@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-image="${IMAGE:-localhost/fedora-atomic}"
+image="${IMAGE:-localhost/cabby-atomic}"
 tag="${TAG:-testing}"
 base_image="${BASE_IMAGE:-ghcr.io/ublue-os/kinoite-main:latest}"
 

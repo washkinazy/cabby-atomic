@@ -23,9 +23,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  LOCAL_IMAGE: localhost/fedora-atomic
-  REMOTE_IMAGE: ghcr.io/${{ github.repository_owner }}/fedora-atomic
-  DIGEST_FILE: /tmp/fedora-atomic-digest
+  LOCAL_IMAGE: localhost/cabby-atomic
+  REMOTE_IMAGE: ghcr.io/${{ github.repository_owner }}/cabby-atomic
+  DIGEST_FILE: /tmp/cabby-atomic-digest
 
 jobs:
   build:
