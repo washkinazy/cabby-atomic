@@ -1,0 +1,113 @@
+---
+name: Build container image
+
+# yamllint disable-line rule:truthy
+on:
+  pull_request:
+    branches:
+      - main
+      - testing
+  push:
+    branches:
+      - main
+      - testing
+    paths-ignore:
+      - "**/README.md"
+  schedule:
+    # Rebuild main every Sunday at 09:17 UTC to pick up the upstream stack.
+    - cron: "17 9 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  LOCAL_IMAGE: localhost/fedora-atomic
+  REMOTE_IMAGE: ghcr.io/${{ github.repository_owner }}/fedora-atomic
+  DIGEST_FILE: /tmp/fedora-atomic-digest
+
+jobs:
+  build:
+    name: Build image
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        # yamllint disable-line rule:line-length
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+
+      - name: Free build space
+        # yamllint disable-line rule:line-length
+        uses: ublue-os/remove-unwanted-software@695eb75bc387dbcd9685a8e72d23439d8686cba6
+
+      - name: Install Task
+        uses: arduino/setup-task@v3
+        with:
+          version: 3.48.0
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Select image channel
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            channel="pr-${{ github.event.pull_request.number }}"
+          elif [[ "${GITHUB_EVENT_NAME}" == "schedule" ]]; then
+            channel="main"
+          else
+            channel="${GITHUB_REF_NAME}"
+          fi
+          echo "CHANNEL=${channel}" >> "${GITHUB_ENV}"
+
+      - name: Build image
+        run: task build IMAGE="${LOCAL_IMAGE}" TAG="${CHANNEL}"
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        # yamllint disable-line rule:line-length
+        uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7  # v4.5.1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish immutable build
+        if: github.event_name != 'pull_request'
+        run: >-
+          task publish
+          IMAGE="${LOCAL_IMAGE}"
+          TAG="${CHANNEL}"
+          REMOTE_IMAGE="${REMOTE_IMAGE}"
+          REMOTE_TAG="build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          DIGEST_FILE="${DIGEST_FILE}"
+
+      - name: Install Cosign
+        if: github.event_name != 'pull_request'
+        # yamllint disable-line rule:line-length
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6  # v4.1.2
+        with:
+          cosign-release: v3.1.2
+
+      - name: Sign and verify image
+        if: github.event_name != 'pull_request'
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
+        run: |
+          set -euo pipefail
+          export DIGEST
+          DIGEST="$(<"${DIGEST_FILE}")"
+          task sign REMOTE_IMAGE="${REMOTE_IMAGE}"
+
+      - name: Publish channel
+        if: github.event_name != 'pull_request'
+        run: >-
+          task publish
+          IMAGE="${LOCAL_IMAGE}"
+          TAG="${CHANNEL}"
+          REMOTE_IMAGE="${REMOTE_IMAGE}"
+          REMOTE_TAG="${CHANNEL}"
+          DIGEST_FILE="${DIGEST_FILE}"

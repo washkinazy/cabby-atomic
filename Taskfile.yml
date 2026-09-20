@@ -1,9 +1,13 @@
+---
 version: "3"
 
 vars:
   IMAGE: '{{default "localhost/fedora-atomic" .IMAGE}}'
   TAG: '{{default "testing" .TAG}}'
   BASE_IMAGE: '{{default "ghcr.io/ublue-os/kinoite-main:latest" .BASE_IMAGE}}'
+  REMOTE_IMAGE: '{{default "ghcr.io/washkinazy/fedora-atomic" .REMOTE_IMAGE}}'
+  REMOTE_TAG: '{{default .TAG .REMOTE_TAG}}'
+  DIGEST_FILE: '{{default "/tmp/fedora-atomic-digest" .DIGEST_FILE}}'
 
 tasks:
   default:
@@ -22,3 +26,29 @@ tasks:
       BASE_IMAGE: "{{.BASE_IMAGE}}"
     cmds:
       - ./scripts/build-image.sh
+
+  publish:
+    desc: Push the built image to its remote channel
+    preconditions:
+      - sh: command -v podman >/dev/null 2>&1
+        msg: Podman is required to publish the image.
+    env:
+      IMAGE: "{{.IMAGE}}"
+      TAG: "{{.TAG}}"
+      REMOTE_IMAGE: "{{.REMOTE_IMAGE}}"
+      REMOTE_TAG: "{{.REMOTE_TAG}}"
+      DIGEST_FILE: "{{.DIGEST_FILE}}"
+    cmds:
+      - ./scripts/publish-image.sh
+
+  sign:
+    desc: Sign and verify a published image digest
+    preconditions:
+      - sh: command -v cosign >/dev/null 2>&1
+        msg: Cosign is required to sign the image.
+      - sh: test -f cosign.pub
+        msg: cosign.pub is required to verify the signature.
+    env:
+      REMOTE_IMAGE: "{{.REMOTE_IMAGE}}"
+    cmds:
+      - ./scripts/sign-image.sh

@@ -28,3 +28,17 @@ task build IMAGE=localhost/fedora-atomic TAG=dev \
 
 Fedora's `go-task` package currently installs the executable as `go-task`. If
 `task` is not otherwise installed or aliased, use `go-task build`.
+
+## Published channels
+
+GitHub Actions builds pull requests without publishing them. Merges to the
+`testing` and `main` branches publish the corresponding image tag:
+
+```text
+ghcr.io/washkinazy/fedora-atomic:testing
+ghcr.io/washkinazy/fedora-atomic:main
+```
+
+The `main` channel is also rebuilt every Sunday to incorporate upstream image
+updates. Published images are signed by digest with Cosign and verified before
+the workflow succeeds.
