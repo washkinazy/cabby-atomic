@@ -72,8 +72,6 @@ tasks:
     preconditions:
       - sh: command -v skopeo >/dev/null 2>&1
         msg: Skopeo is required to verify the containers policy.
-      - sh: command -v podman >/dev/null 2>&1
-        msg: Podman is required to clean up the verification image.
     env:
       REMOTE_IMAGE: "{{.REMOTE_IMAGE}}"
       DIGEST: "{{.DIGEST}}"

@@ -7,10 +7,8 @@ digest="${DIGEST:?DIGEST is required}"
 policy_source=system_files/etc/containers/policy.json
 registries_dir=system_files/etc/containers/registries.d
 workdir="$(mktemp -d)"
-verify_ref="localhost/cabby-atomic-policy-check:${digest#sha256:}"
 
 cleanup() {
-  podman image rm --force "${verify_ref}" >/dev/null 2>&1 || true
   rm -rf "${workdir}"
 }
 trap cleanup EXIT
@@ -22,9 +20,10 @@ sed "s#/etc/pki/containers/cabby-atomic.pub#${PWD}/cosign.pub#" \
   "${policy_source}" > "${workdir}/policy.json"
 
 skopeo copy \
+  --quiet \
   --policy "${workdir}/policy.json" \
   --registries.d "${registries_dir}" \
   "docker://${remote_image}@${digest}" \
-  "containers-storage:${verify_ref}"
+  "dir:${workdir}/verified-image"
 
 printf 'Policy accepted %s@%s\n' "${remote_image}" "${digest}"
