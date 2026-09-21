@@ -51,12 +51,28 @@ for command in niri Hyprland noctalia uwsm brightnessctl playerctl; do
   require_command "${command}"
 done
 
+require_command lsinitrd
+
 require_file /usr/share/wayland-sessions/niri.desktop
 require_file /usr/share/wayland-sessions/hyprland.desktop
 require_file /usr/share/plymouth/themes/spinner/watermark.png
 require_file /etc/pki/containers/cabby-atomic.pub
 require_file /etc/containers/policy.json
 require_file /etc/containers/registries.d/cabby-atomic.yaml
+
+initramfs_count=0
+for initramfs in /usr/lib/modules/*/initramfs.img; do
+  [[ -f "${initramfs}" ]] || continue
+  initramfs_count=$((initramfs_count + 1))
+  if lsinitrd "${initramfs}" | grep -F 'ostree-prepare-root' >/dev/null; then
+    pass "OSTree prepare-root in ${initramfs}"
+  else
+    fail "missing OSTree prepare-root in ${initramfs}"
+  fi
+done
+if ((initramfs_count == 0)); then
+  fail "no image-owned initramfs found"
+fi
 
 if python3 -m json.tool /etc/containers/policy.json >/dev/null; then
   pass "signature policy JSON"

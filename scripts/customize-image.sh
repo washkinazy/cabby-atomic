@@ -31,12 +31,7 @@ if ! cmp -s /ctx/cosign.pub /etc/pki/containers/cabby-atomic.pub; then
   exit 1
 fi
 
-# Plymouth assets are embedded in the bootable initramfs, so changing only the
-# root filesystem copy would leave the old Fedora watermark visible at boot.
-# Target bootc's image-owned initramfs directly; --regenerate-all writes a new
-# file under /boot, which bootc ignores and its container lint rejects.
-for module_dir in /usr/lib/modules/*; do
-  [[ -d "${module_dir}" ]] || continue
-  kernel_version="${module_dir##*/}"
-  dracut --force "${module_dir}/initramfs.img" "${kernel_version}"
-done
+# Keep the base image's initramfs intact. Regenerating it from inside the image
+# build omits OSTree prepare-root integration because the build container is not
+# itself OSTree-booted, leaving /sysroot mounted as the raw Btrfs root and
+# causing initrd-switch-root.service to enter emergency mode.
