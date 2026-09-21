@@ -29,6 +29,14 @@ require_file() {
   fi
 }
 
+require_package() {
+  if rpm -q "$1" >/dev/null 2>&1; then
+    pass "package $1"
+  else
+    fail "missing package $1"
+  fi
+}
+
 # shellcheck disable=SC1091
 source /usr/lib/os-release
 if [[ "${NAME:-}" == "Cabby Atomic" ]]; then
@@ -46,6 +54,22 @@ if [[ "${PRETTY_NAME:-}" == "Cabby Atomic: ${VERSION_ID:-}" ]]; then
 else
   fail "boot-menu name"
 fi
+
+require_file /usr/libexec/cabby-atomic/variant
+variant="$(</usr/libexec/cabby-atomic/variant)"
+case "${variant}" in
+  standard)
+    pass "standard image variant"
+    ;;
+  nvidia)
+    pass "NVIDIA image variant"
+    require_command nvidia-smi
+    require_package nvidia-driver
+    ;;
+  *)
+    fail "unknown image variant ${variant}"
+    ;;
+esac
 
 for command in niri Hyprland noctalia uwsm brightnessctl playerctl; do
   require_command "${command}"

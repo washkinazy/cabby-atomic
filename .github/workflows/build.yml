@@ -29,11 +29,21 @@ env:
 
 jobs:
   build:
-    name: Build image
+    name: Build ${{ matrix.variant }} image
     runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: standard
+            base_image: ghcr.io/ublue-os/kinoite-main:44
+            tag_suffix: ""
+          - variant: nvidia
+            base_image: ghcr.io/ublue-os/kinoite-nvidia:44
+            tag_suffix: -nvidia
 
     steps:
       - name: Checkout
@@ -61,13 +71,23 @@ jobs:
           else
             channel="${GITHUB_REF_NAME}"
           fi
+          suffix="${{ matrix.tag_suffix }}"
+          image_tag="${channel}${suffix}"
+          immutable_tag="build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}${suffix}"
           echo "CHANNEL=${channel}" >> "${GITHUB_ENV}"
+          echo "IMAGE_TAG=${image_tag}" >> "${GITHUB_ENV}"
+          echo "IMMUTABLE_TAG=${immutable_tag}" >> "${GITHUB_ENV}"
 
       - name: Build image
-        run: task build IMAGE="${LOCAL_IMAGE}" TAG="${CHANNEL}"
+        run: >-
+          task build
+          IMAGE="${LOCAL_IMAGE}"
+          TAG="${IMAGE_TAG}"
+          BASE_IMAGE="${{ matrix.base_image }}"
+          IMAGE_VARIANT="${{ matrix.variant }}"
 
       - name: Validate image
-        run: task validate IMAGE="${LOCAL_IMAGE}" TAG="${CHANNEL}"
+        run: task validate IMAGE="${LOCAL_IMAGE}" TAG="${IMAGE_TAG}"
 
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'
@@ -83,9 +103,9 @@ jobs:
         run: >-
           task publish
           IMAGE="${LOCAL_IMAGE}"
-          TAG="${CHANNEL}"
+          TAG="${IMAGE_TAG}"
           REMOTE_IMAGE="${REMOTE_IMAGE}"
-          REMOTE_TAG="build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          REMOTE_TAG="${IMMUTABLE_TAG}"
           DIGEST_FILE="${DIGEST_FILE}"
 
       - name: Install Cosign
@@ -118,7 +138,7 @@ jobs:
         run: >-
           task publish
           IMAGE="${LOCAL_IMAGE}"
-          TAG="${CHANNEL}"
+          TAG="${IMAGE_TAG}"
           REMOTE_IMAGE="${REMOTE_IMAGE}"
-          REMOTE_TAG="${CHANNEL}"
+          REMOTE_TAG="${IMAGE_TAG}"
           DIGEST_FILE="${DIGEST_FILE}"

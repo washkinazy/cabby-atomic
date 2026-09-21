@@ -3,6 +3,15 @@
 set -euo pipefail
 
 os_release=/usr/lib/os-release
+image_variant="${CABBY_VARIANT:-standard}"
+
+case "${image_variant}" in
+  standard | nvidia) ;;
+  *)
+    printf 'Unsupported Cabby image variant: %s\n' "${image_variant}" >&2
+    exit 1
+    ;;
+esac
 
 # shellcheck disable=SC1090
 source "${os_release}"
@@ -25,6 +34,7 @@ fi
 
 cp -a /ctx/system_files/. /
 chmod 0755 /usr/libexec/cabby-atomic/validate-image
+printf '%s\n' "${image_variant}" > /usr/libexec/cabby-atomic/variant
 
 if ! cmp -s /ctx/cosign.pub /etc/pki/containers/cabby-atomic.pub; then
   printf 'Embedded signing key does not match cosign.pub\n' >&2

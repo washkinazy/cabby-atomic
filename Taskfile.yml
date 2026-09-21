@@ -5,7 +5,9 @@ vars:
   # Local builds default to the same channel used by the development laptop.
   IMAGE: '{{default "localhost/cabby-atomic" .IMAGE}}'
   TAG: '{{default "testing" .TAG}}'
-  BASE_IMAGE: '{{default "ghcr.io/ublue-os/kinoite-main:latest" .BASE_IMAGE}}'
+  NVIDIA_TAG: '{{default "testing-nvidia" .NVIDIA_TAG}}'
+  BASE_IMAGE: '{{default "ghcr.io/ublue-os/kinoite-main:44" .BASE_IMAGE}}'
+  IMAGE_VARIANT: '{{default "standard" .IMAGE_VARIANT}}'
   REMOTE_IMAGE: '{{default "ghcr.io/washkinazy/cabby-atomic" .REMOTE_IMAGE}}'
   REMOTE_TAG: '{{default .TAG .REMOTE_TAG}}'
   DIGEST_FILE: '{{default "/tmp/cabby-atomic-digest" .DIGEST_FILE}}'
@@ -25,8 +27,19 @@ tasks:
       IMAGE: "{{.IMAGE}}"
       TAG: "{{.TAG}}"
       BASE_IMAGE: "{{.BASE_IMAGE}}"
+      IMAGE_VARIANT: "{{.IMAGE_VARIANT}}"
     cmds:
       - ./scripts/build-image.sh
+
+  build-nvidia:
+    desc: Build the local NVIDIA Open bootc image
+    cmds:
+      - >-
+        {{.TASK_EXE}} build
+        IMAGE="{{.IMAGE}}"
+        TAG="{{.NVIDIA_TAG}}"
+        BASE_IMAGE="ghcr.io/ublue-os/kinoite-nvidia:44"
+        IMAGE_VARIANT="nvidia"
 
   validate:
     desc: Run Cabby Atomic smoke tests against a built image

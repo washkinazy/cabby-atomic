@@ -41,5 +41,5 @@ for uBlue's Mesa or multimedia choices.
   into the bootc image.
 - Users, dotfiles, hostnames, storage mounts, service enrollment, and other
   machine-specific state remain outside the image.
-- NVIDIA driver packaging belongs to the future NVIDIA image variant, not the
-  shared workstation package layer.
+- NVIDIA driver packaging is inherited from uBlue's pinned Kinoite NVIDIA Open
+  base and does not belong to Cabby's shared workstation package layer.

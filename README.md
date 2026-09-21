@@ -26,7 +26,13 @@ Build arguments can be overridden without editing the Taskfile:
 
 ```bash
 task build IMAGE=localhost/cabby-atomic TAG=dev \
-  BASE_IMAGE=ghcr.io/ublue-os/kinoite-main:latest
+  BASE_IMAGE=ghcr.io/ublue-os/kinoite-main:44
+```
+
+Build the NVIDIA Open variant:
+
+```bash
+task build-nvidia
 ```
 
 Fedora's `go-task` package currently installs the executable as `go-task`. If
@@ -39,12 +45,16 @@ GitHub Actions builds pull requests without publishing them. Merges to the
 
 ```text
 ghcr.io/washkinazy/cabby-atomic:testing
+ghcr.io/washkinazy/cabby-atomic:testing-nvidia
 ghcr.io/washkinazy/cabby-atomic:main
+ghcr.io/washkinazy/cabby-atomic:main-nvidia
 ```
 
-The `main` channel is also rebuilt every Sunday to incorporate upstream image
-updates. Published images are signed by digest with Cosign and verified before
-the workflow succeeds.
+The standard images use `ghcr.io/ublue-os/kinoite-main:44`; NVIDIA images use
+`ghcr.io/ublue-os/kinoite-nvidia:44` and inherit uBlue's NVIDIA Open driver
+stack. Both `main` variants are rebuilt every Sunday to incorporate upstream
+image updates. Every published variant is signed by digest with Cosign and
+verified before its channel tag advances.
 
 ## Desktop baseline
 
