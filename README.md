@@ -20,9 +20,7 @@ task build
 The result is tagged `localhost/cabby-atomic:testing`.
 
 The image identifies itself as `Cabby Atomic: <Fedora version>` in the boot menu
-and installs a cabby-hat Plymouth watermark. Embedding that watermark in the
-bootable initramfs is temporarily deferred while preserving the base image's
-OSTree-aware initramfs.
+and embeds a cabby-hat watermark in the Plymouth boot splash.
 
 Build arguments can be overridden without editing the Taskfile:
 

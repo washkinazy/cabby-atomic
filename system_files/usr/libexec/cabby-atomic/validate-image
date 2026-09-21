@@ -69,6 +69,13 @@ for initramfs in /usr/lib/modules/*/initramfs.img; do
   else
     fail "missing OSTree prepare-root in ${initramfs}"
   fi
+  if cmp -s \
+    <(lsinitrd -f /usr/share/plymouth/themes/spinner/watermark.png "${initramfs}") \
+    /usr/share/plymouth/themes/spinner/watermark.png; then
+    pass "Cabby Plymouth watermark in ${initramfs}"
+  else
+    fail "missing or incorrect Plymouth watermark in ${initramfs}"
+  fi
 done
 if ((initramfs_count == 0)); then
   fail "no image-owned initramfs found"

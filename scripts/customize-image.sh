@@ -31,7 +31,18 @@ if ! cmp -s /ctx/cosign.pub /etc/pki/containers/cabby-atomic.pub; then
   exit 1
 fi
 
-# Keep the base image's initramfs intact. Regenerating it from inside the image
-# build omits OSTree prepare-root integration because the build container is not
-# itself OSTree-booted, leaving /sysroot mounted as the raw Btrfs root and
-# causing initrd-switch-root.service to enter emergency mode.
+# Plymouth assets must be embedded in the image-owned initramfs. Build it as a
+# reproducible, non-host-only image and explicitly include OSTree prepare-root;
+# without that module, switch-root sees the raw Btrfs root and enters emergency
+# mode instead of mounting the selected deployment.
+kernel_version="$(rpm -q --queryformat='%{evr}.%{arch}' kernel-core)"
+initramfs="/usr/lib/modules/${kernel_version}/initramfs.img"
+
+export DRACUT_NO_XATTR=1
+dracut \
+  --no-hostonly \
+  --reproducible \
+  --add ostree \
+  --kver "${kernel_version}" \
+  --force "${initramfs}"
+chmod 0600 "${initramfs}"
