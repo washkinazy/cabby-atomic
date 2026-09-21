@@ -1,0 +1,87 @@
+# Packages from the previous workstation configuration that are not already
+# present in the Cabby/uBlue image. Packages here resolve only from repositories
+# inherited from the base image or explicitly enabled for Cabby's WM session.
+
+# Shell and CLI utilities
+git
+chezmoi
+trash-cli
+cabextract
+mc
+
+# Monitoring and system information
+btop
+nmon
+duf
+ncdu
+hwinfo
+inxi
+fastfetch
+
+# Printing, filesystems, and desktop integration
+system-config-printer
+libmediainfo
+gvfs
+gvfs-smb
+fuse-libs
+
+# Fonts available from Fedora
+fontawesome-6-free-fonts
+fontawesome-6-brands-fonts
+fontawesome4-fonts
+fontawesome4-fonts-web
+rsms-inter-fonts
+rsms-inter-vf-fonts
+
+# Hyprland companion applications from the existing Hyprland COPR
+hyprshutdown
+hyprlauncher
+hyprsunset
+hyprpolkitagent
+hyprland-guiutils
+
+# Terminals and shell
+alacritty
+kitty
+fish
+
+# Desktop applications and integration
+gnome-disk-utility
+udiskie
+unrar
+okular
+kcalc
+gwenview
+vlc
+inkscape
+gimp
+rawtherapee
+chromium
+@libreoffice
+
+# Development and container tooling
+gh
+go-task
+ruff
+yamllint
+ShellCheck
+shfmt
+pipx
+podman-compose
+
+# Virtualization
+@virtualization
+libvirt-daemon
+
+# Network tooling
+tailscale
+
+# Gaming. Steam and Spotify resolve from the multimedia repository inherited
+# from uBlue; Cabby does not configure or reproduce that repository.
+vulkan-validation-layers
+mangohud
+gamescope
+steam-devices
+jstest-gtk
+steam
+spotify-client

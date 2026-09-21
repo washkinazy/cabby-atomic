@@ -51,6 +51,12 @@ for command in niri Hyprland noctalia uwsm brightnessctl playerctl; do
   require_command "${command}"
 done
 
+for command in \
+  chezmoi fastfetch fish gh task tailscale virsh \
+  steam spotify vlc zed; do
+  require_command "${command}"
+done
+
 require_command lsinitrd
 
 require_file /usr/share/wayland-sessions/niri.desktop

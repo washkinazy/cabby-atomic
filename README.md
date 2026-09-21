@@ -1,8 +1,8 @@
 # Cabby Atomic
 
-A window-manager-focused Fedora Atomic desktop built with bootc. The initial
-image is based on Universal Blue Kinoite so Plasma remains available as a
-fallback while the Niri, Hyprland, and Noctalia desktop stack is developed.
+A window-manager-focused Fedora Atomic desktop built with bootc and based on
+Universal Blue Kinoite. It provides Niri, Hyprland, and Noctalia while retaining
+Plasma as a fallback desktop environment.
 
 ## Local build
 
@@ -49,9 +49,15 @@ the workflow succeeds.
 ## Desktop baseline
 
 The image includes Niri, Hyprland, UWSM, Noctalia, the compositor-specific XDG
-desktop portals, and the small set of system services Noctalia drives. Package
-selection lives in `packages/desktop.list`. Window-manager and shell
-configuration remains in the separate dotfiles repository.
+desktop portals, and a workstation package layer. Package selection is split
+between `packages/desktop.list`, `packages/workstation.list`, and the narrowly
+scoped `packages/terra.list`.
+
+Cabby treats the uBlue image as its package baseline. Packages and capabilities
+already supplied by that image—including its multimedia stack—are not
+reimplemented. See [the package migration policy](docs/package-migration.md)
+for the ownership boundary. Window-manager and shell configuration remains in
+the separate dotfiles repository.
 
 Run the same smoke tests used by CI against a local build:
 
@@ -66,9 +72,9 @@ require images pulled from `ghcr.io/washkinazy/cabby-atomic` to carry a valid
 Sigstore signature from that key. CI tests this installed policy against the
 immutable image digest before advancing a channel tag.
 
-Signature enforcement is established in two steps because Aurora or an older
-Cabby deployment does not yet contain the Cabby public key. After the `testing`
-workflow succeeds, first deploy and boot the image that contains the policy:
+Signature enforcement is established in two steps when the active deployment
+does not yet contain the Cabby public key. First deploy and boot the image that
+contains the policy:
 
 ```bash
 sudo bootc switch ghcr.io/washkinazy/cabby-atomic:testing
@@ -96,7 +102,7 @@ sudo bootc upgrade --check
 sudo bootc upgrade
 ```
 
-To move a proven laptop from `testing` to the stable channel:
+To switch from the `testing` channel to the `main` channel:
 
 ```bash
 sudo bootc switch ghcr.io/washkinazy/cabby-atomic:main
@@ -110,6 +116,6 @@ sudo bootc rollback
 sudo systemctl reboot
 ```
 
-Before removing the previous Aurora deployment, test one rollback and return to
+Before removing a previous deployment, verify that rollback works and return to
 Cabby Atomic. A failed or unsigned Cabby image should be rejected during
 `bootc switch` or `bootc upgrade` before it becomes a deployment.
