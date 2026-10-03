@@ -1,10 +1,25 @@
-ARG BASE_IMAGE="ghcr.io/ublue-os/kinoite-main:latest"
+ARG BASE_IMAGE="ghcr.io/ublue-os/kinoite-main:44"
+
+FROM scratch AS build-context
+COPY scripts/customize-image.sh /
+COPY scripts/install-packages.sh /
+COPY packages /packages
+COPY cosign.pub /
+COPY system_files /system_files
+
 FROM ${BASE_IMAGE}
 
-LABEL org.opencontainers.image.title="fedora-atomic"
-LABEL org.opencontainers.image.description="Personal Fedora Atomic desktop image"
-LABEL org.opencontainers.image.source="https://github.com/washkinazy/fedora-atomic"
+ARG IMAGE_VARIANT="standard"
 
-# Keep the first milestone deliberately small: prove that the selected desktop
-# base can be built locally as a valid bootc image before adding customization.
+LABEL org.opencontainers.image.title="Cabby Atomic"
+LABEL org.opencontainers.image.description="A window-manager-focused Fedora Atomic desktop"
+LABEL org.opencontainers.image.source="https://github.com/washkinazy/cabby-atomic"
+LABEL io.github.washkinazy.cabby-atomic.variant="${IMAGE_VARIANT}"
+
+RUN --mount=type=bind,from=build-context,source=/,target=/ctx \
+    /ctx/install-packages.sh && \
+    CABBY_VARIANT="${IMAGE_VARIANT}" /ctx/customize-image.sh
+
+RUN /usr/libexec/cabby-atomic/validate-image
+
 RUN bootc container lint

@@ -1,0 +1,10 @@
+# Packages that have no provider in the repositories inherited from uBlue.
+# Keep this list narrow: Terra must not become Cabby's multimedia or Mesa source.
+
+firacode-nerd-fonts
+cascadiacode-nerd-fonts
+jetbrainsmono-nerd-fonts
+iosevka-nerd-fonts
+belleve-invis-iosevka-fonts
+zed
+zed-cli
