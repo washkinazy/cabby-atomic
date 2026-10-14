@@ -16,10 +16,15 @@ on:
   schedule:
     # Rebuild main every Sunday at 09:17 UTC to pick up the upstream stack.
     - cron: "17 9 * * 0"
+    # Rebuild testing daily at 10:17 UTC so it receives upstream changes first.
+    - cron: "17 10 * * *"
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  # Keep the main and testing timers independent even though GitHub schedules
+  # both from the default branch's workflow definition.
+  # yamllint disable-line rule:line-length
+  group: ${{ github.workflow }}-${{ github.event.schedule || github.ref || github.run_id }}
   cancel-in-progress: true
 
 env:
@@ -31,6 +36,7 @@ jobs:
   build:
     name: Build ${{ matrix.variant }} image
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     permissions:
       contents: read
       packages: write
@@ -46,9 +52,58 @@ jobs:
             tag_suffix: -nvidia
 
     steps:
+      - name: Select build channel and ref
+        shell: bash
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          set -euo pipefail
+          build_ref=""
+
+          case "${GITHUB_EVENT_NAME}" in
+            pull_request)
+              channel="pr-${PR_NUMBER}"
+              ;;
+            schedule)
+              case "${SCHEDULE}" in
+                "17 9 * * 0")
+                  channel="main"
+                  build_ref="main"
+                  ;;
+                "17 10 * * *")
+                  channel="testing"
+                  build_ref="testing"
+                  ;;
+                *)
+                  printf 'Unknown schedule: %s\n' "${SCHEDULE}" >&2
+                  exit 1
+                  ;;
+              esac
+              ;;
+            push | workflow_dispatch)
+              channel="${GITHUB_REF_NAME}"
+              ;;
+            *)
+              printf 'Unsupported event: %s\n' "${GITHUB_EVENT_NAME}" >&2
+              exit 1
+              ;;
+          esac
+
+          suffix="${{ matrix.tag_suffix }}"
+          immutable_tag="build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}${suffix}"
+          echo "BUILD_REF=${build_ref}" >> "${GITHUB_ENV}"
+          echo "CHANNEL=${channel}" >> "${GITHUB_ENV}"
+          echo "IMAGE_TAG=${channel}${suffix}" >> "${GITHUB_ENV}"
+          echo "IMMUTABLE_TAG=${immutable_tag}" >> "${GITHUB_ENV}"
+
       - name: Checkout
         # yamllint disable-line rule:line-length
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          # Scheduled workflows originate on the default branch. The explicit
+          # ref makes the daily testing job build testing's actual contents.
+          ref: ${{ env.BUILD_REF }}
 
       - name: Free build space
         # yamllint disable-line rule:line-length
@@ -59,24 +114,6 @@ jobs:
         with:
           version: 3.48.0
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Select image channel
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
-            channel="pr-${{ github.event.pull_request.number }}"
-          elif [[ "${GITHUB_EVENT_NAME}" == "schedule" ]]; then
-            channel="main"
-          else
-            channel="${GITHUB_REF_NAME}"
-          fi
-          suffix="${{ matrix.tag_suffix }}"
-          image_tag="${channel}${suffix}"
-          immutable_tag="build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}${suffix}"
-          echo "CHANNEL=${channel}" >> "${GITHUB_ENV}"
-          echo "IMAGE_TAG=${image_tag}" >> "${GITHUB_ENV}"
-          echo "IMMUTABLE_TAG=${immutable_tag}" >> "${GITHUB_ENV}"
 
       - name: Build image
         run: >-
