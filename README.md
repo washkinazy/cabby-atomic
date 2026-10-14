@@ -52,10 +52,9 @@ ghcr.io/washkinazy/cabby-atomic:main-nvidia
 
 The standard images use `ghcr.io/ublue-os/kinoite-main:44`; NVIDIA images use
 `ghcr.io/ublue-os/kinoite-nvidia:44` and inherit uBlue's NVIDIA Open driver
-stack. Both `testing` variants are rebuilt daily at 10:17 UTC so upstream
-changes land there first; both `main` variants are rebuilt every Sunday at
-09:17 UTC. Every published variant is signed by digest with Cosign and verified
-before its channel tag advances.
+stack. Both `main` variants are rebuilt every Sunday to incorporate upstream
+image updates. Every published variant is signed by digest with Cosign and
+verified before its channel tag advances.
 
 ## Desktop baseline
 
